@@ -1,0 +1,90 @@
+<%- include('partials/header', { title: 'Dashboard · Chalanee' }) %>
+
+<% if (user) { %>
+  <div class="ch-page-head" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+    <div>
+      <h1>Hello, <%= user.name || user.email %></h1>
+      <p class="subtle">
+        <span class="badge <%= user.role === 'admin' ? 'badge-danger' : (user.role === 'premium' ? 'badge-accent' : 'badge-primary') %>">
+          <%= user.role %>
+        </span>
+        &nbsp;·&nbsp; <a href="/users/<%= user.id %>">View your profile</a>
+      </p>
+    </div>
+    <a class="btn" href="/notes/new">+ New note</a>
+  </div>
+
+  <div class="grid grid-3 stats">
+    <div class="stat">
+      <span class="label">Notes</span>
+      <span class="value"><%= notes.length %></span>
+      <span class="delta">across all categories</span>
+    </div>
+    <div class="stat">
+      <span class="label">Account ID</span>
+      <span class="value">#<%= user.id %></span>
+      <span class="delta">created <%= (user.created_at || '').split(' ')[0] %></span>
+    </div>
+    <div class="stat">
+      <span class="label">Plan</span>
+      <span class="value" style="text-transform:capitalize"><%= user.role === 'premium' ? 'Premium' : (user.role === 'admin' ? 'Admin' : 'Free') %></span>
+      <span class="delta"><a href="/orders" class="muted">Manage →</a></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Recent notes</h2>
+      <a class="btn btn-ghost btn-sm" href="/notes">See all →</a>
+    </div>
+    <% if (notes && notes.length) { %>
+      <div class="note-list">
+        <% notes.slice(0, 5).forEach(function (n) { %>
+          <a class="note-card" href="/notes/<%= n.id %>/edit" style="text-decoration:none; color:inherit;">
+            <div class="note-title">
+              <span><%= n.title %></span>
+              <span class="badge badge-primary"><%= n.category || 'uncategorised' %></span>
+            </div>
+            <div class="note-content"><%= n.content %></div>
+            <% if (n.tags) { %>
+              <div class="dim mono" style="font-size:12px; margin-top:2px;">tags: <%= n.tags %></div>
+            <% } %>
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="muted">No notes yet. <a href="/notes/new">Create your first note →</a></p>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Quick actions</h2>
+    </div>
+    <div class="grid grid-3">
+      <a class="card-tight hover" style="margin:0; text-decoration:none; color:inherit; display:block;" href="/users/<%= user.id %>">
+        <strong>Edit your profile</strong>
+        <div class="muted" style="font-size:13px; margin-top:4px;">Update bio, avatar, preferences.</div>
+      </a>
+      <a class="card-tight hover" style="margin:0; text-decoration:none; color:inherit; display:block;" href="/orders">
+        <strong>Plans &amp; orders</strong>
+        <div class="muted" style="font-size:13px; margin-top:4px;">Upgrade plan, redeem coupons, see history.</div>
+      </a>
+      <a class="card-tight hover" style="margin:0; text-decoration:none; color:inherit; display:block;" href="/webhooks">
+        <strong>Webhooks</strong>
+        <div class="muted" style="font-size:13px; margin-top:4px;">Outbound notifications when notes change.</div>
+      </a>
+    </div>
+  </div>
+<% } else { %>
+  <div class="card" style="max-width:520px; margin:64px auto; text-align:center;">
+    <h2>You're signed out</h2>
+    <p class="muted">Log in to see your notes and account info.</p>
+    <p style="margin-top:16px;">
+      <a href="/login" class="btn">Log in</a>
+      <a href="/register" class="btn btn-secondary" style="margin-left:6px;">Register</a>
+    </p>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

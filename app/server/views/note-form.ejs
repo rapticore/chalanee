@@ -1,0 +1,93 @@
+<%- include('partials/header', { title: (note ? 'Edit note' : 'New note') + ' · Chalanee' }) %>
+
+<div class="ch-page-head">
+  <h1><%= note ? 'Edit note' : 'New note' %></h1>
+  <p class="subtle">
+    <%= note ? ('Note #' + note.id) : 'Create a new note in your vault.' %>
+    <% if (note && typeof owner !== 'undefined' && owner) { %>
+      &nbsp;·&nbsp; owner: <code>#<%= owner.id %></code> <%= owner.email %>
+    <% } %>
+  </p>
+</div>
+
+<% if (typeof bolaFlag !== 'undefined' && bolaFlag && typeof viewer !== 'undefined' && viewer) { %>
+  <div class="alert alert-warn" style="margin-bottom: 18px;">
+    <div>
+      <strong>BOLA on notes detected (distinct from the profile IDOR).</strong>
+      You're reading note <code>#<%= note.id %></code> owned by user
+      <code>#<%= note.owner_id %></code><% if (typeof owner !== 'undefined' && owner) { %>
+      (<%= owner.email %>)<% } %>, while signed in as user
+      <code>#<%= viewer.id %></code> (<%= viewer.email %>).
+      Same vulnerability class as <strong>CH-E03</strong> (user-profile IDOR),
+      different object surface — track it separately in your report.
+      No ownership check exists on the note read paths
+      (<code>GET /api/notes/:id</code> and <code>/notes/:id/edit</code>);
+      iterating <code>/notes/1/edit</code>, <code>/notes/2/edit</code>, … reveals
+      every note in the database. Write paths (<code>PATCH</code>,
+      <code>DELETE</code>) <em>do</em> check ownership and will refuse —
+      only the read path is leaky.
+      <div style="margin-top:8px; font-family: var(--font-mono);">
+        <%= bolaFlag %>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<div class="card" style="max-width: 720px;">
+  <form id="note-form" data-note-id="<%= note ? note.id : '' %>">
+    <label class="field">
+      <span>Title</span>
+      <input name="title" type="text" required value="<%= note ? note.title : '' %>" placeholder="A short, memorable title">
+    </label>
+    <div class="field-row">
+      <label class="field">
+        <span>Category</span>
+        <input name="category" type="text" value="<%= note ? (note.category || '') : '' %>" placeholder="e.g. work, finance, personal">
+      </label>
+      <label class="field">
+        <span>Tags</span>
+        <input name="tags" type="text" value="<%= note ? (note.tags || '') : '' %>" placeholder="comma,separated,tags">
+      </label>
+    </div>
+    <label class="field">
+      <span>Content</span>
+      <textarea name="content" rows="8" required placeholder="Write your note here. Markdown is supported."><%= note ? note.content : '' %></textarea>
+    </label>
+    <div style="display:flex; gap:8px;">
+      <button type="submit"><%= note ? 'Save changes' : 'Create note' %></button>
+      <a class="btn btn-ghost" href="/notes">Cancel</a>
+    </div>
+  </form>
+  <p id="note-status" class="muted" style="margin-top:14px; display:none; font-size:13.5px;"></p>
+</div>
+
+<script>
+  document.getElementById('note-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var form = e.target;
+    var data = Object.fromEntries(new FormData(form).entries());
+    var id = form.dataset.noteId;
+    var box = document.getElementById('note-status');
+    box.style.display = '';
+    box.textContent = 'Saving...';
+    var url = id ? ('/api/notes/' + id) : '/api/notes';
+    var method = id ? 'PATCH' : 'POST';
+    fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (r) {
+        if (r.ok) {
+          box.classList.add('success');
+          box.textContent = 'Saved.';
+          setTimeout(function () { window.location = '/notes'; }, 500);
+        } else {
+          box.classList.add('error');
+          box.textContent = (r.body && r.body.error) || 'Save failed.';
+        }
+      });
+  });
+</script>
+
+<%- include('partials/footer') %>

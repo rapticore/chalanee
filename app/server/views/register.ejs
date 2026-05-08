@@ -1,0 +1,90 @@
+<%- include('partials/header', { title: 'Register · Chalanee' }) %>
+
+<div style="max-width: 460px; margin: 24px auto;">
+  <div class="ch-page-head" style="text-align:center; align-items:center;">
+    <h1>Create your vault</h1>
+    <p class="subtle">Free forever for personal use. Upgrade any time.</p>
+  </div>
+
+  <div class="card">
+    <form id="register-form" autocomplete="on">
+      <label class="field">
+        <span>Email</span>
+        <input name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+      </label>
+      <label class="field">
+        <span>Display name</span>
+        <input name="name" type="text" placeholder="Your name (optional)">
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input name="password" type="password" autocomplete="new-password" placeholder="At least 4 characters" required>
+      </label>
+      <button type="submit" class="btn-block">Create account</button>
+    </form>
+
+    <div id="register-status" class="muted" style="margin-top:16px; display:none; font-size:13.5px;"></div>
+
+    <div style="margin-top:16px; text-align:center; font-size:13.5px;">
+      <a href="/login" class="muted">Already have an account? Log in →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('register-form')?.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = Object.fromEntries(new FormData(e.target).entries());
+    var box = document.getElementById('register-status');
+    var btn = e.target.querySelector('button[type=submit]');
+    box.style.display = '';
+    box.classList.remove('error', 'success');
+    box.classList.add('muted');
+    box.textContent = 'Creating account...';
+    if (btn) { btn.disabled = true; btn.dataset.origText = btn.textContent; btn.textContent = 'Creating...'; }
+
+    function release() { if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || 'Create account'; } }
+    function show(kind, msg) {
+      box.classList.remove('muted', 'error', 'success');
+      box.classList.add(kind);
+      box.textContent = msg;
+    }
+
+    fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+      .then(function (r) {
+        return r.text().then(function (raw) {
+          var body; try { body = JSON.parse(raw); } catch (_) { body = { error: raw || ('HTTP ' + r.status) }; }
+          return { status: r.status, body: body };
+        });
+      })
+      .then(function (r) {
+        if (r.status === 200 && r.body.id) {
+          var notice = r.body.notice ? ('  ·  ' + r.body.notice) : '';
+          show('success', 'Account created' + notice + '  ·  signing you in...');
+          return fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.email, password: data.password })
+          })
+            .then(function (r2) { return r2.json(); })
+            .then(function (j2) {
+              if (j2 && j2.token) localStorage.setItem('ch_token', j2.token);
+              setTimeout(function () { window.location = '/dashboard'; }, 1200);
+            });
+        }
+        release();
+        show('error', 'HTTP ' + r.status + ' — ' + ((r.body && r.body.error) || 'Registration failed.'));
+      })
+      .catch(function (err) {
+        release();
+        show('error', 'Network error: ' + ((err && err.message) || err));
+        console.error('register fetch failed', err);
+      });
+  });
+</script>
+
+<%- include('partials/footer') %>

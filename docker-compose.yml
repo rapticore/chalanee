@@ -1,0 +1,48 @@
+services:
+  chalanee-app:
+    build: ./app
+    container_name: chalanee-app
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_PATH=/data/chalanee.db
+      - JWT_SECRET=${JWT_SECRET:-chalanee-not-actually-secret-shh}
+      - SCOREBOARD_URL=http://chalanee-scoreboard:3001
+      - SMTP_HOST=chalanee-mailcatch
+      - SMTP_PORT=1025
+      - HARD_TIER_FLAG_H01=FLAG{template-engine-pwned}
+      - HARD_TIER_FLAG_H04=FLAG{deserialized-and-pwned}
+    volumes:
+      - app-data:/data
+    depends_on:
+      - chalanee-scoreboard
+      - chalanee-mailcatch
+    restart: unless-stopped
+
+  chalanee-scoreboard:
+    build: ./scoreboard
+    container_name: chalanee-scoreboard
+    ports:
+      - "${SCOREBOARD_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - INSTRUCTOR_TOKEN=${INSTRUCTOR_TOKEN:-instructor-default-change-me}
+      - DATA_PATH=/data/scoreboard.json
+    volumes:
+      - scoreboard-data:/data
+    restart: unless-stopped
+
+  chalanee-mailcatch:
+    image: mailhog/mailhog:v1.0.1
+    container_name: chalanee-mailcatch
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-1080}:1080"
+    restart: unless-stopped
+
+volumes:
+  app-data:
+  scoreboard-data:

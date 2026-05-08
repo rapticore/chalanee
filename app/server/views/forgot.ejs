@@ -1,0 +1,39 @@
+<%- include('partials/header', { title: 'Forgot password · Chalanee' }) %>
+
+<div style="max-width: 460px; margin: 24px auto;">
+  <div class="ch-page-head" style="text-align:center; align-items:center;">
+    <h1>Reset your password</h1>
+    <p class="subtle">We'll email a reset link if the address is registered.</p>
+  </div>
+
+  <div class="card">
+    <form id="forgot-form">
+      <label class="field">
+        <span>Email</span>
+        <input name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+      </label>
+      <button type="submit" class="btn-block">Send reset link</button>
+    </form>
+    <p id="forgot-result" class="muted" style="margin-top:14px; display:none;"></p>
+    <div style="margin-top:14px; font-size:13.5px;" class="muted">
+      Reset emails land in MailHog at <a href="http://localhost:1080" target="_blank" rel="noopener">localhost:1080</a>.
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('forgot-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var box = document.getElementById('forgot-result');
+      box.style.display = '';
+      box.textContent = 'Submitting...';
+      fetch('/api/auth/forgot-password', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: e.target.email.value })
+      }).then(function () {
+        box.textContent = 'If the address is registered, a reset email will be sent.';
+      });
+    });
+  </script>
+</div>
+
+<%- include('partials/footer') %>

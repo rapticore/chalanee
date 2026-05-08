@@ -1,0 +1,40 @@
+<%- include('partials/header', { title: 'Admin · Chalanee' }) %>
+
+<div style="max-width: 460px; margin: 24px auto;">
+  <div class="ch-page-head" style="text-align:center; align-items:center;">
+    <span class="badge badge-danger" style="margin-bottom:8px;">Restricted</span>
+    <h1>Admin Panel</h1>
+    <p class="subtle">Sign in with administrator credentials.</p>
+  </div>
+
+  <div class="card">
+    <form id="login-form">
+      <label class="field">
+        <span>Admin email</span>
+        <input name="email" type="text" autocomplete="username" placeholder="email@example.com" required>
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+      </label>
+      <button type="submit" class="btn-block">Authenticate</button>
+    </form>
+
+    <pre id="login-result" style="margin-top:14px; display:none;"></pre>
+  </div>
+
+  <div class="alert alert-warn">
+    <div>
+      <strong>Reminder.</strong> The admin panel exposes destructive actions. All admin sessions are logged.
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('login-form')?.addEventListener('submit', function () {
+    var box = document.getElementById('login-result');
+    if (box) box.style.display = '';
+  });
+</script>
+
+<%- include('partials/footer') %>

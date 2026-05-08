@@ -1,0 +1,71 @@
+<%- include('partials/header', { title: 'Admin · Users' }) %>
+
+<div class="ch-page-head">
+  <h1>Admin · Users</h1>
+  <p class="subtle">All registered users. Use with care — destructive actions are immediate.</p>
+</div>
+
+<div class="card-tight" style="display:flex; gap:8px;">
+  <a class="btn btn-ghost btn-sm" href="/admin/users">Users</a>
+  <a class="btn btn-ghost btn-sm" href="/admin/orders">Orders</a>
+  <a class="btn btn-ghost btn-sm" href="/admin/coupons">Coupons</a>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>All users</h2>
+    <span class="badge" id="user-count">loading…</span>
+  </div>
+  <table class="table">
+    <thead><tr><th>ID</th><th>Email</th><th>Name</th><th>Role</th><th>Created</th><th></th></tr></thead>
+    <tbody id="users-tbody">
+      <tr><td class="muted" colspan="6" style="text-align:center; padding:18px;">Loading…</td></tr>
+    </tbody>
+  </table>
+  <div id="admin-flag" class="alert alert-success" style="margin-top:14px; display:none;"></div>
+</div>
+
+<script>
+  fetch('/api/admin/users').then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+    .then(function (r) {
+      if (!r.ok) {
+        document.getElementById('users-tbody').innerHTML =
+          '<tr><td class="error" colspan="6" style="text-align:center; padding:18px;">' +
+          (r.body.error || 'Failed to load users') + '</td></tr>';
+        return;
+      }
+      var users = r.body.users || [];
+      document.getElementById('user-count').textContent = users.length + ' total';
+      document.getElementById('users-tbody').innerHTML = users.map(function (u) {
+        var roleBadge = u.role === 'admin' ? 'badge-danger' :
+                        (u.role === 'premium' ? 'badge-accent' : 'badge-primary');
+        return '<tr>' +
+          '<td>#' + u.id + '</td>' +
+          '<td class="mono">' + escapeHtml(u.email) + '</td>' +
+          '<td>' + escapeHtml(u.name || '—') + '</td>' +
+          '<td><span class="badge ' + roleBadge + '">' + u.role + '</span></td>' +
+          '<td class="muted">' + (u.created_at || '').split(' ')[0] + '</td>' +
+          '<td><button class="btn btn-ghost btn-sm" data-id="' + u.id + '">Delete</button></td>' +
+        '</tr>';
+      }).join('');
+      document.querySelectorAll('#users-tbody button').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (!confirm('Delete user #' + b.dataset.id + '?')) return;
+          fetch('/api/admin/users/' + b.dataset.id, { method: 'DELETE' })
+            .then(function () { location.reload(); });
+        });
+      });
+      if (r.body.flag_m02) {
+        var box = document.getElementById('admin-flag');
+        box.style.display = '';
+        box.innerHTML = '<div><strong>BFLA detected.</strong> ' + escapeHtml(r.body.flag_m02) + '</div>';
+      }
+    });
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) {
+      return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m];
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

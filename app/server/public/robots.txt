@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admin
+Disallow: /backup
+Disallow: /api/internal
+Disallow: /.git
+Disallow: /uploads
+
+# Internal note for crawlers and devs:
+# FLAG{robots-betrayed-the-secrets}

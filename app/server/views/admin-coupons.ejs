@@ -1,0 +1,61 @@
+<%- include('partials/header', { title: 'Admin · Coupons' }) %>
+
+<div class="ch-page-head">
+  <h1>Admin · Coupons</h1>
+  <p class="subtle">Mint promotional codes for users to redeem at checkout.</p>
+</div>
+
+<div class="card-tight" style="display:flex; gap:8px;">
+  <a class="btn btn-ghost btn-sm" href="/admin/users">Users</a>
+  <a class="btn btn-ghost btn-sm" href="/admin/orders">Orders</a>
+  <a class="btn btn-ghost btn-sm" href="/admin/coupons">Coupons</a>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Create coupon</h2>
+  </div>
+  <form id="mint-form">
+    <div class="field-row">
+      <label class="field">
+        <span>Code</span>
+        <input name="code" type="text" required placeholder="e.g. SAVE20" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Discount %</span>
+        <input name="discount_pct" type="number" min="0" max="100" placeholder="20">
+      </label>
+      <label class="field">
+        <span>Expires (ISO)</span>
+        <input name="expires_at" type="text" placeholder="2099-12-31T00:00:00Z">
+      </label>
+    </div>
+    <label class="field" style="display:flex; align-items:center; gap:8px;">
+      <input type="checkbox" name="admin_only" style="width:auto;">
+      <span style="margin:0;">Admin-only coupon</span>
+    </label>
+    <button type="submit">Mint coupon</button>
+  </form>
+  <pre id="mint-result" style="margin-top:12px; display:none;"></pre>
+</div>
+
+<script>
+  document.getElementById('mint-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = Object.fromEntries(new FormData(e.target).entries());
+    if (e.target.admin_only.checked) data.admin_only = true;
+    if (data.discount_pct) data.discount_pct = Number(data.discount_pct);
+    fetch('/api/admin/coupons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (r) { return r.json(); })
+      .then(function (j) {
+        var box = document.getElementById('mint-result');
+        box.style.display = '';
+        box.textContent = JSON.stringify(j, null, 2);
+      });
+  });
+</script>
+
+<%- include('partials/footer') %>

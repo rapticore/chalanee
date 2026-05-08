@@ -1,0 +1,28 @@
+<%- include('partials/header', { title: 'Chalanee — your personal digital vault' }) %>
+
+<section class="hero">
+  <span class="hero-badge">★ Personal · Private · Encrypted</span>
+  <h1>Your secrets, organised in one trusted vault.</h1>
+  <p>Store notes, share them with collaborators, configure webhooks for change notifications, and upgrade your plan when you need more capacity. Chalanee is the digital safe deposit box you wish your password manager were.</p>
+  <div class="actions">
+    <a href="/register" class="btn">Create your vault</a>
+    <a href="/login" class="btn btn-secondary">Log in</a>
+  </div>
+</section>
+
+<div class="grid grid-3">
+  <div class="card hover">
+    <h3>Notes &amp; categories</h3>
+    <p class="muted">Markdown notes, organised into categories, with sharing controls (view-only or edit) for collaborators.</p>
+  </div>
+  <div class="card hover">
+    <h3>Webhooks &amp; integrations</h3>
+    <p class="muted">Get notified the moment a shared note changes. Outbound HTTP delivers structured events to your tools.</p>
+  </div>
+  <div class="card hover">
+    <h3>Plans &amp; coupons</h3>
+    <p class="muted">Free for personal use. Upgrade to Premium or Enterprise. Redeem promotional codes at checkout.</p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

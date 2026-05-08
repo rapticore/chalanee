@@ -1,0 +1,48 @@
+<%- include('partials/header', { title: 'Notes · Chalanee' }) %>
+
+<div class="ch-page-head" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+  <div>
+    <h1>Your notes</h1>
+    <p class="subtle"><%= notes.length %> note<%= notes.length === 1 ? '' : 's' %></p>
+  </div>
+  <a class="btn" href="/notes/new">+ New note</a>
+</div>
+
+<div class="card">
+  <% if (notes && notes.length) { %>
+    <div class="note-list">
+      <% notes.forEach(function (n) { %>
+        <div class="note-card" data-note-id="<%= n.id %>">
+          <div class="note-title">
+            <span><%= n.title %></span>
+            <span style="display:inline-flex; gap:6px;">
+              <span class="badge badge-primary"><%= n.category || 'uncategorised' %></span>
+              <a href="/notes/<%= n.id %>/edit" class="btn btn-ghost btn-sm">Edit</a>
+              <button class="btn btn-ghost btn-sm note-delete" data-id="<%= n.id %>" type="button">Delete</button>
+            </span>
+          </div>
+          <div class="note-content"><%= n.content %></div>
+          <% if (n.tags) { %>
+            <div class="dim mono" style="font-size:12px;">tags: <%= n.tags %></div>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="muted">No notes yet. <a href="/notes/new">Create your first note →</a></p>
+  <% } %>
+</div>
+
+<script>
+  document.querySelectorAll('.note-delete').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.dataset.id;
+      if (!confirm('Delete this note?')) return;
+      fetch('/api/notes/' + id, { method: 'DELETE' })
+        .then(function (r) { return r.json(); })
+        .then(function () { location.reload(); });
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

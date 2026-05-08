@@ -1,0 +1,70 @@
+<%- include('partials/header', { title: 'Webhooks · Chalanee' }) %>
+
+<div class="ch-page-head">
+  <h1>Webhooks</h1>
+  <p class="subtle">Get notified by HTTP when your notes or shares change.</p>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Add a webhook</h2>
+  </div>
+  <p class="card-sub">We'll send a test request to your URL when you save it.</p>
+  <form id="hook-form">
+    <label class="field">
+      <span>Webhook URL</span>
+      <input name="url" type="text" required placeholder="https://example.com/hooks/chalanee" autocomplete="off">
+    </label>
+    <label class="field">
+      <span>Event</span>
+      <input name="event" type="text" value="note.changed" required>
+    </label>
+    <button type="submit">Save webhook</button>
+  </form>
+  <pre id="hook-result" style="margin-top:12px; display:none;"></pre>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Configured webhooks</h2>
+    <span class="badge"><%= hooks.length %></span>
+  </div>
+  <% if (hooks && hooks.length) { %>
+    <table class="table">
+      <thead><tr><th>#</th><th>URL</th><th>Event</th><th>Last status</th><th>When</th></tr></thead>
+      <tbody>
+        <% hooks.forEach(function (h) { %>
+          <tr>
+            <td>#<%= h.id %></td>
+            <td class="mono" style="font-size:12.5px; word-break:break-all; max-width:380px;"><%= h.url %></td>
+            <td><span class="badge badge-primary"><%= h.event %></span></td>
+            <td><%= h.last_status || '—' %></td>
+            <td class="muted"><%= h.created_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p class="muted">No webhooks configured.</p>
+  <% } %>
+</div>
+
+<script>
+  document.getElementById('hook-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = Object.fromEntries(new FormData(e.target).entries());
+    fetch('/api/webhooks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (r) { return r.json(); })
+      .then(function (j) {
+        var box = document.getElementById('hook-result');
+        box.style.display = '';
+        box.textContent = JSON.stringify(j, null, 2);
+        setTimeout(function () { location.reload(); }, 1500);
+      });
+  });
+</script>
+
+<%- include('partials/footer') %>

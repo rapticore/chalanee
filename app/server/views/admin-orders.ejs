@@ -1,0 +1,52 @@
+<%- include('partials/header', { title: 'Admin · Orders' }) %>
+
+<div class="ch-page-head">
+  <h1>Admin · Orders</h1>
+  <p class="subtle">All orders across users. Refunds happen on click.</p>
+</div>
+
+<div class="card-tight" style="display:flex; gap:8px;">
+  <a class="btn btn-ghost btn-sm" href="/admin/users">Users</a>
+  <a class="btn btn-ghost btn-sm" href="/admin/orders">Orders</a>
+  <a class="btn btn-ghost btn-sm" href="/admin/coupons">Coupons</a>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>All orders</h2>
+    <span class="badge" id="order-count">loading…</span>
+  </div>
+  <table class="table">
+    <thead><tr><th>ID</th><th>User</th><th>Plan</th><th>Qty</th><th>Total</th><th>Status</th><th>When</th></tr></thead>
+    <tbody id="orders-tbody">
+      <tr><td class="muted" colspan="7" style="text-align:center; padding:18px;">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  fetch('/api/admin/orders').then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+    .then(function (r) {
+      if (!r.ok) {
+        document.getElementById('orders-tbody').innerHTML =
+          '<tr><td class="error" colspan="7" style="text-align:center; padding:18px;">' +
+          (r.body.error || 'Failed') + '</td></tr>';
+        return;
+      }
+      var orders = r.body.orders || [];
+      document.getElementById('order-count').textContent = orders.length + ' total';
+      document.getElementById('orders-tbody').innerHTML = orders.map(function (o) {
+        return '<tr>' +
+          '<td>#' + o.id + '</td>' +
+          '<td>user #' + o.user_id + '</td>' +
+          '<td><span class="badge badge-primary">' + o.plan + '</span></td>' +
+          '<td>' + o.quantity + '</td>' +
+          '<td>$' + (o.total_cents / 100).toFixed(2) + '</td>' +
+          '<td><span class="badge">' + o.status + '</span></td>' +
+          '<td class="muted">' + o.created_at + '</td>' +
+        '</tr>';
+      }).join('');
+    });
+</script>
+
+<%- include('partials/footer') %>

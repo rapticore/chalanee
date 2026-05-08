@@ -1,0 +1,9 @@
+-- Chalanee SQL dump (truncated)
+-- Generated: 2024-12-01
+
+INSERT INTO users (id, email, role, password_hash) VALUES
+  (1, 'admin@chalanee.com', 'admin', '$2a$04$REDACTED'),
+  (2, 'alice@test.com', 'user', '$2a$04$REDACTED');
+
+-- Internal note left in dump by accident:
+-- FLAG{indexed-and-exposed}

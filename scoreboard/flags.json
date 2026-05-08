@@ -1,0 +1,36 @@
+{
+  "FLAG{default-creds-still-here}":           { "vuln_id": "CH-T01", "tier": "Trivial",     "points": 1 },
+  "FLAG{robots-betrayed-the-secrets}":        { "vuln_id": "CH-T02", "tier": "Trivial",     "points": 1 },
+  "FLAG{indexed-and-exposed}":                { "vuln_id": "CH-T05", "tier": "Trivial",     "points": 1 },
+
+  "FLAG{search-reflects-everything}":         { "vuln_id": "CH-E01", "tier": "Easy",        "points": 2 },
+  "FLAG{sqli-still-works-in-2026}":           { "vuln_id": "CH-E02", "tier": "Easy",        "points": 2 },
+  "FLAG{idor-classic-find-the-other-user}":   { "vuln_id": "CH-E03", "tier": "Easy",        "points": 2 },
+  "FLAG{httponly-was-optional-apparently}":   { "vuln_id": "CH-E04", "tier": "Easy",        "points": 2 },
+  "FLAG{secrets-in-the-bundle}":              { "vuln_id": "CH-E05", "tier": "Easy",        "points": 2 },
+  "FLAG{enumerated-into-existence}":          { "vuln_id": "CH-E06", "tier": "Easy",        "points": 2 },
+  "FLAG{password-policy-policy-failure}":     { "vuln_id": "CH-E07", "tier": "Easy",        "points": 2 },
+  "FLAG{bola-on-notes-read-everything}":      { "vuln_id": "CH-E08", "tier": "Easy",        "points": 2 },
+
+  "FLAG{stored-xss-in-the-bio}":              { "vuln_id": "CH-M01", "tier": "Medium",      "points": 3 },
+  "FLAG{bfla-vertical-escalation-complete}":  { "vuln_id": "CH-M02", "tier": "Medium",      "points": 3 },
+  "FLAG{mass-assigned-to-admin}":             { "vuln_id": "CH-M03", "tier": "Medium",      "points": 3 },
+  "FLAG{api-said-too-much}":                  { "vuln_id": "CH-M04", "tier": "Medium",      "points": 3 },
+  "FLAG{none-algorithm-still-a-thing}":       { "vuln_id": "CH-M05", "tier": "Medium",      "points": 3 },
+  "FLAG{cors-reflected-and-creds-allowed}":   { "vuln_id": "CH-M06", "tier": "Medium",      "points": 3 },
+  "FLAG{open-redirect-easy-phish}":           { "vuln_id": "CH-M07", "tier": "Medium",      "points": 3 },
+  "FLAG{session-stayed-fixed}":               { "vuln_id": "CH-M08", "tier": "Medium",      "points": 3 },
+
+  "FLAG{blind-but-talkative}":                { "vuln_id": "CH-MH01","tier": "Medium-Hard", "points": 4 },
+  "FLAG{svg-is-the-new-html}":                { "vuln_id": "CH-MH02","tier": "Medium-Hard", "points": 4 },
+  "FLAG{race-won-multiple-times}":            { "vuln_id": "CH-MH03","tier": "Medium-Hard", "points": 4 },
+  "FLAG{negative-quantity-positive-balance}": { "vuln_id": "CH-MH04","tier": "Medium-Hard", "points": 4 },
+  "FLAG{ssrf-internal-or-cloud}":             { "vuln_id": "CH-MH05","tier": "Medium-Hard", "points": 4 },
+  "FLAG{v1-never-died}":                      { "vuln_id": "CH-MH06","tier": "Medium-Hard", "points": 4 },
+  "FLAG{internal-api-was-public}":            { "vuln_id": "CH-MH07","tier": "Medium-Hard", "points": 4 },
+
+  "FLAG{template-engine-pwned}":              { "vuln_id": "CH-H01", "tier": "Hard",        "points": 5 },
+  "FLAG{proto-polluted-and-promoted}":        { "vuln_id": "CH-H02", "tier": "Hard",        "points": 5 },
+  "FLAG{chained-ssrf-to-admin}":              { "vuln_id": "CH-H03", "tier": "Hard",        "points": 5 },
+  "FLAG{deserialized-and-pwned}":             { "vuln_id": "CH-H04", "tier": "Hard",        "points": 5 }
+}

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# Chalanee local commit-author guard.
+#
+# Rejects any commit whose author email is not in the allowlist below. This is
+# a *friction layer*, not a security boundary — anyone with repo access can
+# disable hooks (`git config core.hooksPath ''` or `git commit --no-verify`).
+# Real enforcement lives on the remote (GitHub branch protection +
+# required-signatures + CODEOWNERS); this hook just keeps an honest local
+# environment honest.
+#
+# Activate (one-time, per clone):
+#   git config core.hooksPath .githooks
+#
+
+set -euo pipefail
+
+ALLOWED_EMAILS=(
+  "ahsanmir@gmail.com"
+)
+
+# Author identity that this commit will use (respects --author override too).
+author_email=$(git var GIT_AUTHOR_IDENT | sed -E 's/.*<([^>]+)>.*/\1/')
+
+for ok in "${ALLOWED_EMAILS[@]}"; do
+  if [[ "$author_email" == "$ok" ]]; then
+    exit 0
+  fi
+done
+
+cat >&2 <<EOF
+
+  ✘ commit blocked — author email not on allowlist
+
+      attempted author : $author_email
+      allowed authors  : ${ALLOWED_EMAILS[*]}
+
+  This is the Chalanee local commit-author guard (.githooks/pre-commit).
+  If this is a legitimate new contributor, add their email to the
+  ALLOWED_EMAILS array in .githooks/pre-commit and commit that change first.
+
+  To bypass for a single commit (you should rarely do this, and never on
+  shared branches):  git commit --no-verify ...
+
+EOF
+exit 1

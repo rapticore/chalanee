@@ -1,0 +1,202 @@
+<%- include('partials/header', { title: (profile.name || profile.email) + ' · Chalanee' }) %>
+
+<div class="ch-page-head">
+  <h1>Profile</h1>
+  <p class="subtle">User <code>#<%= profile.id %></code></p>
+</div>
+
+<% if (typeof idorFlag !== 'undefined' && idorFlag && viewer) { %>
+  <div class="alert alert-warn" style="margin-bottom: 18px;">
+    <div>
+      <strong>Access-control issue detected.</strong>
+      You're viewing user <code>#<%= profile.id %></code>
+      (<%= profile.email %>) while signed in as user
+      <code>#<%= viewer.id %></code> (<%= viewer.email %>).
+      No ownership check exists on profile views — this is a classic
+      <strong>IDOR</strong> / <strong>BOLA</strong> (OWASP API Top 10 #1).
+      The same path on <code>GET /api/users/<%= profile.id %></code> additionally
+      exposes <code>password_hash</code>, <code>mfa_secret</code>,
+      <code>ssn</code>, and <code>internal_notes</code>.
+      <div style="margin-top:8px; font-family: var(--font-mono);">
+        <%= idorFlag %>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+
+<div class="card">
+  <div class="profile-head">
+    <% if (profile.avatar_path) { %>
+      <img class="avatar" src="<%= profile.avatar_path %>" alt="avatar of <%= profile.name || profile.email %>">
+    <% } else { %>
+      <span class="avatar"><%= ((profile.name || profile.email) || '?').charAt(0).toUpperCase() %></span>
+    <% } %>
+    <div>
+      <h2 style="margin:0; font-size:1.4rem;"><%= profile.name || profile.email %></h2>
+      <div class="profile-meta">
+        <span class="badge <%= profile.role === 'admin' ? 'badge-danger' : (profile.role === 'premium' ? 'badge-accent' : 'badge-primary') %>"><%= profile.role %></span>
+        <span class="muted mono" style="font-size:13px;"><%= profile.email %></span>
+        <% if (profile.created_at) { %>
+          <span class="dim" style="font-size:12.5px;">joined <%= (profile.created_at || '').split(' ')[0] %></span>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px;">Bio</h3>
+  <!-- CH-M01: bio is rendered with raw HTML interpolation. -->
+  <div class="bio"><%- profile.bio || '<em>No bio set yet.</em>' %></div>
+</div>
+
+<% if (viewer && viewer.id === profile.id) { %>
+  <div class="card">
+    <div class="card-head">
+      <h2>Edit your bio</h2>
+      <span class="badge">Profile details</span>
+    </div>
+    <p class="card-sub">Update the public bio shown on your profile page.</p>
+    <form id="bio-form" data-user-id="<%= profile.id %>">
+      <label class="field">
+        <span>Bio</span>
+        <textarea name="bio" rows="4" placeholder="Tell people about yourself…"><%= profile.bio || '' %></textarea>
+      </label>
+      <div style="display:flex; gap:8px;">
+        <button type="submit">Save bio</button>
+        <a class="btn btn-ghost" href="/dashboard">Back to dashboard</a>
+      </div>
+    </form>
+    <p id="bio-result" class="muted" style="margin-top:14px; display:none; font-size:13.5px;"></p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Avatar</h2>
+      <span class="badge">PNG, JPEG, SVG up to 2 MB</span>
+    </div>
+    <p class="card-sub">Upload an image — it'll show up next to your name across the app.</p>
+    <form id="avatar-form" enctype="multipart/form-data">
+      <input type="file" name="avatar" accept="image/*" required style="margin-bottom:10px;">
+      <div style="display:flex; gap:8px;">
+        <button type="submit">Upload avatar</button>
+      </div>
+    </form>
+    <p id="avatar-result" class="muted" style="margin-top:12px; display:none; font-size:13.5px;"></p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Email signature template</h2>
+      <span class="badge">EJS</span>
+    </div>
+    <p class="card-sub">Used when Chalanee sends mail on your behalf. Supports <code>&lt;%= name %&gt;</code> placeholders.</p>
+    <form id="tpl-form" data-user-id="<%= profile.id %>">
+      <label class="field">
+        <span>Template</span>
+        <textarea name="template" rows="3" placeholder="Hello, &lt;%= name %&gt;"><%= profile.email_template || '' %></textarea>
+      </label>
+      <button type="submit">Save and preview</button>
+    </form>
+    <pre id="tpl-result" style="margin-top:12px; display:none;"></pre>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Preferences</h2>
+      <span class="badge">JSON</span>
+    </div>
+    <p class="card-sub">Power users can patch preferences directly via JSON. Sent as <code>PATCH /api/users/&lt;id&gt;/preferences</code>.</p>
+    <form id="prefs-form" data-user-id="<%= profile.id %>">
+      <label class="field">
+        <span>JSON patch</span>
+        <textarea name="prefs" rows="4" placeholder='{"theme":"dark","timezone":"UTC"}'>{}</textarea>
+      </label>
+      <button type="submit">Apply</button>
+    </form>
+    <pre id="prefs-result" style="margin-top:12px; display:none;"></pre>
+  </div>
+
+  <script>
+    function box(id, s, ok) {
+      var el = document.getElementById(id);
+      el.style.display = '';
+      el.textContent = s;
+      el.classList.remove('success', 'error');
+      if (ok === true) el.classList.add('success');
+      if (ok === false) el.classList.add('error');
+    }
+
+    document.getElementById('bio-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var bio = e.target.bio.value;
+      box('bio-result', 'Saving...', null);
+      fetch('/api/users/' + e.target.dataset.userId + '/bio', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bio: bio })
+      })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+        .then(function (r) {
+          var msg = r.ok ? 'Saved.' : 'Save failed.';
+          if (r.body && r.body.note) msg += '  ' + r.body.note;
+          if (r.body && r.body.flag_m01) msg += '  ' + r.body.flag_m01;
+          box('bio-result', msg, r.ok);
+          if (r.ok) setTimeout(function () { location.reload(); }, r.body && r.body.flag_m01 ? 2200 : 700);
+        });
+    });
+
+    document.getElementById('avatar-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fd = new FormData(e.target);
+      box('avatar-result', 'Uploading...', null);
+      fetch('/upload/avatar', { method: 'POST', body: fd })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+        .then(function (r) {
+          var msg = r.ok ? 'Uploaded: ' + r.body.path : (r.body.error || 'Upload failed');
+          if (r.body && r.body.note) msg += '  ' + r.body.note;
+          if (r.body && r.body.flag_mh02) msg += '  ' + r.body.flag_mh02;
+          box('avatar-result', msg, r.ok);
+          if (r.ok) setTimeout(function () { location.reload(); }, r.body && r.body.flag_mh02 ? 2200 : 800);
+        });
+    });
+
+    document.getElementById('tpl-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var data = { template: e.target.template.value };
+      var box = document.getElementById('tpl-result');
+      box.style.display = '';
+      box.textContent = 'Saving...';
+      fetch('/api/users/' + e.target.dataset.userId + '/email-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(function (r) { return r.json(); })
+        .then(function (j) { box.textContent = JSON.stringify(j, null, 2); });
+    });
+
+    document.getElementById('prefs-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var raw = e.target.prefs.value || '{}';
+      var box = document.getElementById('prefs-result');
+      box.style.display = '';
+      try {
+        JSON.parse(raw);
+      } catch (_) {
+        box.textContent = 'Invalid JSON.'; return;
+      }
+      box.textContent = 'Applying...';
+      fetch('/api/users/' + e.target.dataset.userId + '/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: raw
+      }).then(function (r) { return r.json(); })
+        .then(function (j) { box.textContent = JSON.stringify(j, null, 2); });
+    });
+  </script>
+<% } else if (!viewer) { %>
+  <div class="alert alert-info">
+    <div>You're viewing this profile signed-out. <a href="/login">Log in</a> to edit your own profile.</div>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

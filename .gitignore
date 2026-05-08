@@ -1,0 +1,20 @@
+node_modules/
+*.db
+*.db-journal
+.DS_Store
+.env
+.env.local
+# .env.example IS tracked (template); .env is the actual override file.
+!.env.example
+
+# Instructor-only secrets — never commit.
+instructor/PRD_PASSWORD.txt
+instructor/*.password
+instructor/*.secret
+app/server/public/uploads/avatars/*
+!app/server/public/uploads/avatars/.gitkeep
+app/data/
+scoreboard/data/
+dist/
+build/
+.idea/
