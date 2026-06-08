@@ -22,6 +22,7 @@
     "CH-M06": { "tier": "Medium",      "points": 3, "flag": "FLAG{cors-reflected-and-creds-allowed}",   "where": "/api/_canary/cors when origin != http://localhost:3000" },
     "CH-M07": { "tier": "Medium",      "points": 3, "flag": "FLAG{open-redirect-easy-phish}",           "where": "/redirect?url=https://evil.com response body" },
     "CH-M08": { "tier": "Medium",      "points": 3, "flag": "FLAG{session-stayed-fixed}",               "where": "POST /api/auth/login response when a 'session' cookie was already present pre-login" },
+    "CH-M09": { "tier": "Medium",      "points": 3, "flag": "FLAG{xssi-array-leaks-cross-origin}",      "where": "GET /api/notes/export returns a top-level JSON array under application/json with no X-Content-Type-Options:nosniff (XSSI)" },
     "CH-MH01":{ "tier": "Medium-Hard", "points": 4, "flag": "FLAG{blind-but-talkative}",                "where": "Exfilled char-by-char from _ctf_flags table via blind SQLi in GET /api/notes?category=" },
     "CH-MH02":{ "tier": "Medium-Hard", "points": 4, "flag": "FLAG{svg-is-the-new-html}",                "where": "/api/_canary/svg-xss when referer is /uploads/avatars/*.svg" },
     "CH-MH03":{ "tier": "Medium-Hard", "points": 4, "flag": "FLAG{race-won-multiple-times}",            "where": "POST /api/coupons/redeem response when redeemers > 1" },

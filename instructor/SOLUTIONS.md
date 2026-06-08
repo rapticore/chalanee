@@ -91,6 +91,15 @@ Authenticate as alice. `GET /api/admin/users` → 200 with full user list and `f
 
 (Easier to hit: `curl -c jar -b "session=fixed-value" -d '{"email":"alice@test.com","password":"Password1!"}' -H 'Content-Type: application/json' http://localhost:3000/api/auth/login` — flag in response.)
 
+### CH-M09 — XSSI (cross-site script inclusion)
+Authenticate, then `GET /api/notes/export`. The legacy export endpoint returns the caller's notes as a *top-level JSON array* (`[ {...}, ... ]`) under `application/json` with no `X-Content-Type-Options: nosniff` header. Because the response is a bare array on a cookie-authenticated GET, an attacker page can `<script src="http://victim/api/notes/export">` and recover the rows cross-origin under content-sniffing / `Array()`-constructor-override. The flag rides in the trailing array element.
+
+```
+curl -s -H "Authorization: Bearer <token>" http://localhost:3000/api/notes/export
+# => [ {...notes...}, {"id":0,"title":"archive","content":"FLAG{xssi-array-leaks-cross-origin}",...} ]
+```
+Fix: wrap rows in an object, send `nosniff`, and require a non-simple request (custom header / CORS preflight) so a `<script>` include can't reach it.
+
 ## Medium-Hard Tier
 
 ### CH-MH01 — Blind SQLi in notes filter

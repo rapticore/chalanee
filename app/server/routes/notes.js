@@ -39,6 +39,27 @@ router.post('/', requireAuth, (req, res) => {
   res.json({ id: result.lastInsertRowid });
 });
 
+// ---- GET /api/notes/export ----
+// CH-M09: XSSI (cross-site script inclusion). Legacy export endpoint that
+// predates the `{ notes: [...] }` envelope used by GET /api/notes — it returns
+// the caller's notes as a *top-level JSON array* under application/json with no
+// X-Content-Type-Options: nosniff (helmet is intentionally off, see CH-T04).
+// An attacker page can `<script src="http://victim/api/notes/export">` and,
+// under content-sniffing / Array-constructor-override, read the victim's notes
+// cross-origin (the cookie rides along on the simple GET).
+// Production fix: wrap the rows in an object, set `nosniff`, and require a
+// non-simple request (custom header / CORS preflight) so a <script> include
+// can't reach it. Registered before `/:id` so `export` isn't swallowed as an id.
+router.get('/export', requireAuth, (req, res) => {
+  const rows = getDb()
+    .prepare('SELECT id, title, content, category, tags FROM notes WHERE owner_id = ? ORDER BY id')
+    .all(req.user.id);
+  const out = rows.map((r) => ({ ...r }));
+  // The sensitive payload that leaks cross-origin is the flag.
+  out.push({ id: 0, title: 'archive', content: 'FLAG{xssi-array-leaks-cross-origin}', category: 'system', tags: null });
+  res.json(out); // naked top-level JSON array — first non-ws char is '['
+});
+
 // ---- GET /api/notes/:id ----
 // CH-E08 / BOLA on notes (distinct from CH-E03 user-profile IDOR — same
 // vulnerability class, different object surface). Notes can be read by any

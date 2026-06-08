@@ -20,6 +20,7 @@
   "FLAG{cors-reflected-and-creds-allowed}":   { "vuln_id": "CH-M06", "tier": "Medium",      "points": 3 },
   "FLAG{open-redirect-easy-phish}":           { "vuln_id": "CH-M07", "tier": "Medium",      "points": 3 },
   "FLAG{session-stayed-fixed}":               { "vuln_id": "CH-M08", "tier": "Medium",      "points": 3 },
+  "FLAG{xssi-array-leaks-cross-origin}":      { "vuln_id": "CH-M09", "tier": "Medium",      "points": 3 },
 
   "FLAG{blind-but-talkative}":                { "vuln_id": "CH-MH01","tier": "Medium-Hard", "points": 4 },
   "FLAG{svg-is-the-new-html}":                { "vuln_id": "CH-MH02","tier": "Medium-Hard", "points": 4 },
